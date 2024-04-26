@@ -15,7 +15,24 @@ This version is modularized as much as possible.
 - use `rud`left/right to change the base A location (F3F only)
 - use scrollbar plus/minus buttons to choose a predefined location.
 - user `ENTER` to activate the changes from the setup screen.
-- 
+
+## On the slope
+ - Wait until you have a valid GPS position
+ - F3F: Take you model and go to the center of the course.
+   - Take the cardinal direction from base left to base right from your mobile.
+   - Enter the value with slider `S1`
+   - With slider `S2` choose "f3f" or "f3f_train"
+   - With `rud` select if base A is left or right
+   - If your model is in the center of the course press `ENTER` to activate the values.
+   - Now you can go to the main screen by pressing `PAGE`
+ - F3B: take your model and go to baseline A.
+   - Take the cardinal direction from baseline A perpenticular to baseline B from your mobile.
+   - Enter the value with slider `S1`
+   - With slider `S2` choose "f3b_spee" or "f3b_dist"
+   - If your model is on baseline A press `ENTER` to activate the values.
+   - Now you can go to the main screen by pressing `PAGE`
+ - To start the run push `SH`
+ 
 ## What is working: NOTHING IS TESTED IN REAL LIVE UNTIL NOW!
 ### Sensors:
  - Logger3 from SM-Modellbau.
