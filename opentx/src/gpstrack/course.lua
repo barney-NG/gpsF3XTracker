@@ -63,8 +63,8 @@ function course.init(courseLength, courseDirection, competition)
     course.text = ''
 end
 function course.output(text)
-    -- course.message = text
-    print(text)
+    course.message = text
+    -- print(text)
 end    
 function course.update(distance, bearing, groundspeed, acceleration)
     -- distance: gps distance from center of course to object [m]
