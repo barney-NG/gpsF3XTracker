@@ -63,8 +63,8 @@ function course.init(courseLength, courseDirection, competition)
     course.text = ''
 end
 function course.output(text)
-    -- course.message = text
-    print(text)
+    course.message = text
+    -- print(text)
 end    
 function course.update(distance, bearing, groundspeed, acceleration)
     -- distance: gps distance from center of course to object [m]
@@ -109,6 +109,10 @@ function course.update(distance, bearing, groundspeed, acceleration)
         -- print("distance: ", course.Distance)
 		local estimatedDistance = math.abs(course.Distance)
         local estimatedOutsideDistance = math.abs(course.Distance)
+        -- check for center
+        if estimatedDistance < 2 then
+            course.output(string.format("center: %-4.1f", course.Distance))
+        end
         -- use the Schreibersche distance estimation 
         if course.useCorrection then
             estimatedDistance = estimatedDistance + course.correctionFactor * groundspeed

@@ -109,6 +109,10 @@ function course.update(distance, bearing, groundspeed, acceleration)
         -- print("distance: ", course.Distance)
 		local estimatedDistance = math.abs(course.Distance)
         local estimatedOutsideDistance = math.abs(course.Distance)
+        -- check for center
+        if estimatedDistance < 2 then
+            course.output(string.format("center: %-4.1f", course.Distance))
+        end
         -- use the Schreibersche distance estimation 
         if course.useCorrection then
             estimatedDistance = estimatedDistance + course.correctionFactor * groundspeed

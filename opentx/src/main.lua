@@ -250,6 +250,8 @@ local function run(event)
                 end
                 -- line 2: General Info
                 screen.text(2, string.format("Runtime: %5.2fs",comp.runtime/1000.0))
+                -- line 3: Course state
+                screen.text(3, "Course: " .. course.message)
                 -- line 4: course information
                 screen.text(4, string.format("V: %6.2f m/s Dst: %-7.2f m ",course.lastGroundSpeed, course.lastDistance))
                 screen.text(5, string.format("H: %5.2fm           %5.1f calls/s",comp.groundHeight, rate))
@@ -262,7 +264,7 @@ local function run(event)
         end
     else
         -- sensor not defined/connected
-        screen.text(5, "GPS sensor not found: " .. sensor.name)
+        screen.text(5, "GPS sensor not found: " .. sensor.name, BLINK)
     end
     -- miscelanious
     if event == EVT_PAGE_BREAK or event == EVT_PAGE_LONG then

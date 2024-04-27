@@ -89,7 +89,7 @@ function sensor.az_sim()
     end
     -- I still follow up the idea that we fly on a radius r ~= |v| -> az ~= v
     -- Then az shall be proportional to elevator-deflection * groundspeed
-    az = elev * speed / 1024.0
+    az = elev * speed / 5120.0
     -- we can limit az to 16 here, because the logger3 limit seems to be 16
     --if az > 16.0 then
     --    az = 16.0
