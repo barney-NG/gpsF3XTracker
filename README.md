@@ -48,3 +48,16 @@ Install the complete *.luac tree from the bin folder to your `/SCRIPTS/TELEMETRY
 Compiling on the transmitter is not possible and you will get an `out of memory`error.
 - you need to install the setup.lua in one telemetry screen and the main.lua in the direct following one. (otherwise it may lead to script errors -- may!)
 
+## Screenshots
+### F3F Training run
+![F3F Training](https://www.rc-network.de/attachments/screenshot-2024-04-27-at-21-35-52-png.12688878)
+
+### Default Setup Screen
+![F3F Training](https://www.rc-network.de/attachments/screenshot-2024-04-27-at-21-44-11-png.12688876)
+
+### Selected one predefined course
+![F3F Training](https://www.rc-network.de/attachments/screenshot-2024-04-27-at-21-36-57-png.12688871)
+
+
+
+
