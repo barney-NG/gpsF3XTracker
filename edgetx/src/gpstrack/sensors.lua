@@ -21,7 +21,7 @@ data.logger3 = {
     gpsDir = {name = "0890", id = 0},
     gpsRelDir = {name = "08A0", id = 0},
     VClimb = {name = "08B0", id = 0, factor = 1.0},
-    Distance = {name = "08C0", id = 0, factor = 1.0},
+    Distance = {name = "Fpat", id = 0, factor = 1.0},
     ax = {name = "AccX", id = 0, factor = 1.0},
     ay = {name = "AccY", id = 0, factor = 1.0},
     az = {name = "AccZ", id = 0, factor = 1.0}
