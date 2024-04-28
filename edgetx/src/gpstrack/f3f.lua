@@ -38,7 +38,7 @@ function comp.init(mode, startLeft)
     comp.rightBaseOut = 0
     comp.played = { }
 end
-
+-- play countdown messages
 function comp.countdown(elapsed_milliseconds)
     local milliseconds = 30500 - elapsed_milliseconds
     local seconds = math.floor(milliseconds / 1000)
@@ -57,21 +57,21 @@ function comp.countdown(elapsed_milliseconds)
     end
 
 end
-
+-- prepare all bases for next timing event 
 function comp.cleanbases()
     comp.leftBaseIn = 0
     comp.leftBaseOut = 0
     comp.rightBaseIn = 0
     comp.rightBaseOut = 0
 end
-
+-- start competition timer (if not started already during the entry phase)
 function comp.startTimer()
     if comp.startTime_ms == 0 or comp.training == true then
         comp.runtime = 0
         comp.startTime_ms = getTime() * 10
     end
 end
-
+-- reset all values and start the competition
 function comp.start()
     comp.message = "started..."
     comp.cleanbases()
@@ -82,15 +82,27 @@ function comp.start()
     else
         comp.state = 5
     end
+    playTone(800,300,0,PLAY_NOW)
 end
+-- messages on base
+local lapTimeOdd = 0
 function comp.lapPassed(lap, laptime)
     comp.message = string.format("lap %d: %5.2fs", lap, laptime/1000.)
     playNumber(lap,0)
     if comp.training then
-        playNumber((laptime+50) / 100., 0, PREC1) -- milliseconds * 1000 = seconds * 10 = seconds + 1 decimal
+        -- My friend Markus Meissner wants to have time only on even laps
+        if lap % 2 == 0 then
+            laptime = laptime + lapTimeOdd
+            playNumber((laptime+50) / 100., 0, PREC1) -- milliseconds * 1000 = seconds * 10 = seconds + 1 decimal
+        else
+            -- store laptime on odd lap
+            lapTimeOdd = laptime
+        end
     end
 end
-
+-------------------------------------------------------
+-- Update Competition Status Machine
+-------------------------------------------------------
 function comp.update(height)
     comp.groundHeight = height or 0.
     -------------------------------------------------------

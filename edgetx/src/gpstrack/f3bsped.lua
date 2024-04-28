@@ -32,37 +32,44 @@ function comp.init(mode, startLeft)
     comp.played = { }
     comp.played_minutes = { }
 end
-
-
+-- prepare all bases for next timing event 
 function comp.cleanbases()
     comp.leftBaseIn = 0
     comp.leftBaseOut = 0
     comp.rightBaseIn = 0
     comp.rightBaseOut = 0
 end
-
+-- start competition timer 
 function comp.startTimer()
     comp.runtime = 0
     comp.startTime_ms = getTime() * 10
 end
-
+-- reset all values and start the competition
 function comp.start()
-    -- start button activated during run -> finish run
-    if comp.state == 25 then
-        comp.state = 30
-        return
-    end
     -- start the status machine
     comp.message = "started..."
     comp.cleanbases()
     comp.lap = 0
     comp. state = 10
+    playTone(800,300,0,PLAY_NOW)
 end
-function comp.lapPassed(lap, laptime, lostHeight)
-    comp.message = string.format("lap %d: %5.2fs diff: %-5.1fm", lap, laptime/1000., lostHeight)
+-- messages on base
+local lapTimeOdd = 0
+function comp.lapPassed(lap, laptime)
+    comp.message = string.format("lap %d: %5.2fs", lap, laptime/1000.)
     playNumber(lap,0)
-    playNumber((laptime+50) / 100., 0, PREC1) -- milliseconds * 1000 = seconds * 10 = seconds + 1 decimal
+    -- It seems to make sense to have only one interim time
+    if lap % 2 == 0 then
+        laptime = laptime + lapTimeOdd
+        playNumber((laptime+50) / 100., 0, PREC1) -- milliseconds * 1000 = seconds * 10 = seconds + 1 decimal
+    else
+        -- store laptime on odd lap
+        lapTimeOdd = laptime
+    end
 end
+-------------------------------------------------------
+-- Update Competition Status Machine
+-------------------------------------------------------
 function comp.update(height)
     comp.groundHeight = height or 0.
     -------------------------------------------------------
@@ -124,16 +131,14 @@ function comp.update(height)
         -- Base B
         if comp.rightBaseOut  > 0 then
             local laptime = comp.rightBaseOut - comp.lastLap
-            local lostHeight = comp.groundHeight - comp.lastHeight
             playTone(800,300,0,PLAY_NOW)
             comp.lastLap = comp.rightBaseOut
-            comp.lastHeight = comp.groundHeight
             comp.cleanbases()
             if comp.lap > 3 then
                 comp.state = 30
                 return
             end
-            comp.lapPassed(comp.lap, laptime, lostHeight)
+            comp.lapPassed(comp.lap, laptime)
             comp.lap = comp.lap + 1
             comp.state = 27 -- next base must be A
             return
@@ -149,16 +154,14 @@ function comp.update(height)
         -- Base A
         if comp.leftBaseOut > 0 then
             local laptime = comp.leftBaseOut - comp.lastLap
-            local lostHeight = comp.groundHeight - comp.lastHeight
             playTone(800,300,0,PLAY_NOW)
             comp.lastLap = comp.leftBaseOut
-            comp.lastHeight = comp.groundHeight
             comp.cleanbases()
             if comp.lap > 3 then
                 comp.state = 30
                 return
             end
-            comp.lapPassed(comp.lap, laptime, lostHeight)
+            comp.lapPassed(comp.lap, laptime)
             comp.lap = comp.lap + 1
             comp.state = 25 -- next base must be B
             return

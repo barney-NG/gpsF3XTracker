@@ -53,19 +53,19 @@ function comp.countdown(elapsed_milliseconds)
         end
     end
 end
-
+-- prepare all bases for next timing event 
 function comp.cleanbases()
     comp.leftBaseIn = 0
     comp.leftBaseOut = 0
     comp.rightBaseIn = 0
     comp.rightBaseOut = 0
 end
-
+-- start competition timer
 function comp.startTimer()
     comp.runtime = 0
     comp.startTime_ms = getTime() * 10
 end
-
+-- reset all values and start the competition
 function comp.start()
     -- start button activated during run -> finish run
     if comp.state == 25 or comp.state == 27 then
@@ -77,7 +77,9 @@ function comp.start()
     comp.cleanbases()
     comp.lap = 0
     comp. state = 10
+    playTone(800,300,0,PLAY_NOW)
 end
+-- messages on base
 function comp.lapPassed(lap, laptime, lostHeight)
     comp.message = string.format("lap %d: %5.2fs diff: %-5.1fm", lap, laptime/1000.0, lostHeight)
     playNumber(lap,0)
@@ -86,6 +88,9 @@ function comp.lapPassed(lap, laptime, lostHeight)
         playNumber(lostHeight,0,PREC1) -- lost height in meters per lap
     end
 end
+-------------------------------------------------------
+-- Update Competition Status Machine
+-------------------------------------------------------
 function comp.update(height)
     comp.groundHeight = height or 0.
     -------------------------------------------------------
