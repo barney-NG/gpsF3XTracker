@@ -6,7 +6,7 @@ functions: ---------------------------------------------------------------------
 ################################################################################]]
 
 -- Widget Definition
-local sensor = {data = nil, name = 'none'}
+local sensor = {data = nil, name = 'none', err=''}
 local data = {}
 -- GPS-Logger3 from SM Modelbau with factory defaults
 data.logger3 = {
@@ -105,12 +105,14 @@ function sensor.initializeSensor(data_table)
         local fieldInfo = getFieldInfo(sensorName)
         print("<<"..sensorName..">>") 
         if type(fieldInfo) ~= 'table' then
-            print(string.format("Invalid sensor name: <%s> -> exit", sensorName))
+            sensor.err = string.format("Sensor <%s> not found", sensorName)
+            print(sensor.err)
             return false
         end
         if fieldInfo.id then
             sensor.data[name].id = fieldInfo.id
         else
+            sensor.err = string.format("No ID for sensor name: <%s>", sensorName)
             return false
         end
     end

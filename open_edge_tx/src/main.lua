@@ -264,7 +264,11 @@ local function run(event)
         end
     else
         -- sensor not defined/connected
-        screen.text(5, "GPS sensor not found: " .. sensor.name, BLINK)
+        if string.len(sensor.err) > 0 then
+            screen.text(5, "GPS: " .. sensor.err, INVERS+BLINK)
+        else
+            screen.text(5, "GPS sensor not found: " .. sensor.name, INVERS+BLINK)
+        end
     end
     -- miscelanious
     if event == EVT_PAGE_BREAK or event == EVT_PAGE_LONG then
@@ -279,11 +283,11 @@ end
 -----------------------------------------------------------
 local function vers(event)
     local ver, radio, maj, minor, rev = getVersion()
-    print("version: "..ver)
     if radio then print ("radio: "..radio) end
     if maj then print ("maj: "..maj) end
     if minor then print ("minor: "..minor) end
     if rev then print ("rev: "..rev) end
+    if ver then print ("ver: "..ver) end
     return 1
   end
 -------------------------------------------------------------------------

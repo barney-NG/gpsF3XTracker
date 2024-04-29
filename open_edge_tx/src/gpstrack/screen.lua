@@ -6,7 +6,7 @@ functions: ---------------------------------------------------------------------
 ################################################################################]]
 
 -- Widget Definition
-local screen = {initialized=false, has_stack=false, cleaned=false}
+local screen = {initialized=false, has_stack=false, cleaned=false, taranis=false, title_height=8}
 
 screen.stack_values = {}
 
@@ -27,7 +27,14 @@ function screen.clean()
     end
 end
 function screen.title(text, first, last)
-    lcd.drawScreenTitle(text, first or 0, last or 0)
+    -- Only on Taranis available
+    if screen.taranis then
+        lcd.drawScreenTitle(text, first or 0, last or 0)
+    else
+        local s = string.format("%-50.50s", text)
+        lcd.drawFilledRectangle(screen.xmin, screen.ymin-screen.title_height, screen.xmax-screen.xmin, screen.title_height, SOLID)
+        lcd.drawText(screen.xmin+1,4,s,SMLSIZE+INVERS)
+    end
 end
 function screen.number(row,number,precision, digits)
     if row > 0 and row <= screen.rows then
@@ -88,8 +95,27 @@ function screen.resetStack()
         end
     end
 end
+function screen.resize(x,y,w,h)
+    screen.title_height = math.floor((h-y)/(screen.rows+1))
+    screen.ymax = h
+    screen.ymin = y + screen.title_height
+    screen.xmin = x
+    if screen.has_stack then
+        screen.xmax = math.floor(3 * w / 4)
+        screen.resetStack()
+    else
+        screen.xmax = w
+    end
+    screen.stack_xmin = screen.xmax
+    screen.stack_xmax = w
+    screen.rh = math.floor((screen.ymax-screen.ymin)/screen.rows)
+end
 function screen.init( rows_in, with_stack )
     if not screen.initialized then
+        local ver, radio, maj, minor, rev = getVersion()
+        if string.find(radio, 'x9d') then
+            screen.taranis = true
+        end
         screen.rows = rows_in or 4
         screen.has_stack = with_stack or false
         -- Taranis title is 8 pixel
@@ -105,8 +131,6 @@ function screen.init( rows_in, with_stack )
         screen.stack_xmin = screen.xmax
         screen.stack_xmax = LCD_W
         screen.rh = math.floor((screen.ymax-screen.ymin)/screen.rows)
-        
-
         screen.initialized = true
         screen.cleaned = false
     end

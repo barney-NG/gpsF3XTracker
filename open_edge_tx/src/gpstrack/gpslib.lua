@@ -27,18 +27,23 @@ function gps.getBearing(p1,p2)
     -- E.g. 40.1234, -75.4523342
     -- http://www.igismap.com/formula-to-find-bearing-or-heading-angle-between-two-points-latitude-longitude/
     
+    -- spherical earth
     local phi1 = math.rad(p1.lat)
     local phi2 = math.rad(p2.lat)
     local dphi = math.rad(p2.lon-p1.lon)
     local X =  math.cos(phi2) * math.sin(dphi)
     local Y = (math.cos(phi1) * math.sin(phi2)) 
             - (math.sin(phi1) * math.cos(phi2) * math.cos(dphi))
-    local bearing = math.atan2(math.rad(X), math.rad(Y))
-    
-    if bearing < 0. then
-        bearing = math.pi + math.pi + bearing
+    local bearing_rad = math.atan2(math.rad(X), math.rad(Y))
+    --]]
+     --[[ Flat-Earth math
+     local x = (p2.lon - p1.lon) * math.cos(math.rad(p1.lat))
+     local bearing_rad =  1.5708 - math.atan2(p2.lat - p1.lat, x)
+    --]]
+    if bearing_rad < 0. then
+        bearing_rad = math.pi + math.pi + bearing_rad
     end
-    return bearing
+    return bearing_rad
 end
 function gps.getDistance(p1, p2)
     -- gps.getDistance(gpsPoint1, gpsPoint2)

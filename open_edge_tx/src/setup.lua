@@ -31,6 +31,7 @@ global_comp_types = {
 
 -- VARIABLES (private -- do not edit)
 local basePath = '/SCRIPTS/TELEMETRY/gpstrack/'
+local taranis = false
 
 -- WIDGETS
 local screen = nil 
@@ -102,7 +103,10 @@ local function run(event)
         screen.clean()
         screen.title("GPS Parameter Setup", 2, 2)
         
-        lcd.drawCombobox(0,9,LCD_W-1,cblist,idx,0)
+        if taranis then
+            -- only available on Taranis
+            lcd.drawCombobox(0,9,LCD_W-1,cblist,idx,0)
+        end
         if lat == 0.0 and lon == 0.0 then
             screen.text(2, "    GPS Position: waiting for signal...")
         else
@@ -267,7 +271,7 @@ end
 -------------------------------------------------------------------------
 local tools = {}
 -- config.locations = {name = "Hang1",lat = 0.987654321, lon = 0.123457689, default = true} 
-local function init()
+local function init(zone)
     print("<<< INIT SETUP >>>")
     -- are we running on simulator?
     local ver, radio, maj, minor, rev = getVersion()
@@ -275,13 +279,18 @@ local function init()
         print("Simulator detectded")
         on_simulator = true
     end
-
+    if string.find(radio,"taranis") then
+        taranis = true
+    end
         -- load locations table  
     locations = mydofile(basePath..'locations.lua')
     -- load screen  
     screen = mydofile(basePath..'screen.lua')
     screen.init(5)
-
+    -- horus for example
+    if zone and type(zone) == 'table' then
+        screen.resize(zone.x, zone.y, zone.w, zone.h)
+    end
     -- setup the locations combobox
     print(type(global_comp_types))
     cblist,cblen = loc2cb(locations)
