@@ -1,6 +1,7 @@
 --[[#############################################################################
-MAIN:
+Copyright (c) 2024 Axel Barnitzke                                     MIT License
 
+SETUP PARAMETERS:
 functions: ---------------------------------------------------------------------
 course direction: s1:  0 - 360 cardinal direction
 competition type: s2:  scrolls through valid types
@@ -49,7 +50,6 @@ function mydofile (filename)
     local f = assert(loadScript(filename,mode))
     return f()
 end
-
 -----------------------------------------------------------
 -- linear extrapolation
 -----------------------------------------------------------
@@ -69,14 +69,12 @@ local function compName(index)
     -- default is the first entry.name
     return global_comp_types[1].name
 end
-
 -------------------------------------------------------------------------
 -- background (periodically called when custom telemetry screen is not visible)
 -------------------------------------------------------------------------
 local function background( event )
     -- not used
 end
-
 -------------------------------------------------------------------------
 -- run (periodically called when custom telemetry screen is visible)
 -------------------------------------------------------------------------
@@ -106,6 +104,9 @@ local function run(event)
         if taranis then
             -- only available on Taranis
             lcd.drawCombobox(0,9,LCD_W-1,cblist,idx,0)
+        else
+            -- show one line from the locations list (poor mans combo ;-)
+            screen.text(1," " .. cblist[idx+1],0)
         end
         if lat == 0.0 and lon == 0.0 then
             screen.text(2, "    GPS Position: waiting for signal...")
@@ -279,10 +280,11 @@ local function init(zone)
         print("Simulator detectded")
         on_simulator = true
     end
+    -- I use some Taranis only functions
     if string.find(radio,"taranis") then
         taranis = true
     end
-        -- load locations table  
+    -- load locations table  
     locations = mydofile(basePath..'locations.lua')
     -- load screen  
     screen = mydofile(basePath..'screen.lua')
@@ -292,7 +294,6 @@ local function init(zone)
         screen.resize(zone.x, zone.y, zone.w, zone.h)
     end
     -- setup the locations combobox
-    print(type(global_comp_types))
     cblist,cblen = loc2cb(locations)
     
     -- test if we can store locations
@@ -303,4 +304,4 @@ local function init(zone)
     -- io.close(f)
 end
 
-return { init=init, background=nil, run=run }
+return { init=init, background=background, run=run }

@@ -1,4 +1,6 @@
 --[[#############################################################################
+Copyright (c) 2024 Axel Barnitzke                                     MIT License
+
 MAIN:
 
 functions: ---------------------------------------------------------------------
@@ -22,6 +24,7 @@ global_gps_pos = {lat=0.,lon=0.}
 local on_simulator = false
 local basePath = '/SCRIPTS/TELEMETRY/gpstrack/' 
 local gpsOK = false
+local taranis = false
 
 -- WIDGETS
 local course = nil
@@ -293,7 +296,7 @@ local function vers(event)
 -------------------------------------------------------------------------
 -- init (the script init function)
 -------------------------------------------------------------------------
-local function init()
+local function init(zone)
     print("<<< INIT MAIN >>>")
     -- are we running on simulator?
     local ver, radio, maj, minor, rev = getVersion()
@@ -301,12 +304,19 @@ local function init()
         print("Simulator detectded")
         on_simulator = true
     end
-
+     -- I use some Taranis only functions
+    if string.find(radio,"taranis") then
+        taranis = true
+    end
     -- load gps library
     gps = mydofile(basePath..'gpslib.lua')
     -- load screen  
     screen = mydofile(basePath..'screen.lua')
     screen.init(5,true)
+    -- horus for example
+    if zone and type(zone) == 'table' then
+        screen.resize(zone.x, zone.y, zone.w, zone.h)
+    end
     -- load sensor 
     sensor = mydofile(basePath..'sensors.lua')
     -- gpsOK = sensor.init('gpsV2')

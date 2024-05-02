@@ -17,11 +17,21 @@ data.logger3 = {
     gpsDate = {name = "Date", id = 0},
     gpsDist = {name = "0860", id = 0, factor = 1.0},
     gpsSats = {name = "0870", id = 0, factor = 1.0},
-    gpsClimb = {name = "0880", id = 0, factor = 1.0},
+    -- gpsClimb = {name = "0880", id = 0, factor = 1.0},
     gpsDir = {name = "0890", id = 0},
-    gpsRelDir = {name = "08A0", id = 0},
-    VClimb = {name = "08B0", id = 0, factor = 1.0},
-    Distance = {name = "Fpat", id = 0, factor = 1.0},
+    -- gpsRelDir = {name = "08A0", id = 0},
+    -- VClimb = {name = "08B0", id = 0, factor = 1.0},
+    -- Distance = {name = "Fpat", id = 0, factor = 1.0},
+    ax = {name = "AccX", id = 0, factor = 1.0},
+    ay = {name = "AccY", id = 0, factor = 1.0},
+    az = {name = "AccZ", id = 0, factor = 1.0}
+}
+-- Any GPS Sensor with internal gyro
+data.gps_with_gyro = {
+    gpsAlt   = {name = "GAlt", id = 0, factor = 1.0},
+    gpsCoord = {name = "GPS", id = 0},
+    gpsSpeed = {name = "GSpd", id = 0, factor = 1.0/3.6}, -- sensor data is in km/h
+    gpsDate = {name = "Date", id = 0},
     ax = {name = "AccX", id = 0, factor = 1.0},
     ay = {name = "AccY", id = 0, factor = 1.0},
     az = {name = "AccZ", id = 0, factor = 1.0}
@@ -120,18 +130,29 @@ function sensor.initializeSensor(data_table)
 end
 -- setup the telemetry unit
 function sensor.init(name)
+    local result = false
     if name == 'logger3' then
         sensor.name = name
-        return sensor.initializeSensor(data.logger3)
+        result = sensor.initializeSensor(data.logger3)
+        -- try everything else
+        if not result then
+            sensor.name = 'GPS with Gyro'
+            result = sensor.initializeSensor(data.gps_with_gyro)
+        end
+        if not result then
+            sensor.name = 'Simple GPS'
+            result = sensor.initializeSensor(data.gpsV2)
+            sensor.az = sensor.az_sim
+        end
     elseif name == 'gpsV2' then
         sensor.name = name
         sensor.az = sensor.az_sim
-        return sensor.initializeSensor(data.gpsV2)
+        result = sensor.initializeSensor(data.gpsV2)
     else
         sensor.name = 'test'
-        return sensor.initializeSensor(data.testUnit)
+        result = sensor.initializeSensor(data.testUnit)
     end
-    return false
+    return result
 end
 
 return sensor
