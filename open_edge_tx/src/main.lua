@@ -25,6 +25,7 @@ local on_simulator = false
 local basePath = '/SCRIPTS/TELEMETRY/gpstrack/' 
 local gpsOK = false
 local taranis = false
+local debug = false
 
 -- WIDGETS
 local course = nil
@@ -52,7 +53,7 @@ local function straight(x, ymin, ymax, b)
     local result = math.floor((ymax - ymin) * x / 2048 + offs)
     return result
 end
---[[ debug (we use this function to emulate GPS input)
+-- debug: fake input (we use this function to emulate GPS input)
 local rudId = getFieldInfo("rud").id
 local eleId = getFieldInfo("ele").id
 local function getPosition()
@@ -61,17 +62,27 @@ local function getPosition()
     if string.find(global_comp_type,"f3b") then
         position = position * 1.5
     end
-    global_gps_pos.lat = direction + 45.0
-    global_gps_pos.lon = position + 60.0
+    global_gps_pos = {lat = direction + math.rad(45.0), lon = position + 60.0}
     -- local az = sensor.az()
     return position,direction   
 end
---]]
 -------------------------------------------------------------------------
 -- background (periodically called)
 -------------------------------------------------------------------------
 local function background( event )
-    if gpsOK then
+    if debug then
+        -- debug without GPS sensor
+        local dist2home,dir2home = getPosition()
+        local groundSpeed = 10
+        local gpsHeight = 99
+        local acclZ = 0.1
+        global_home_dir = 0
+        course.direction = 0 -- rad!
+        -- update course
+        course.update(dist2home, dir2home, groundSpeed, acclZ)
+        -- update competition
+        comp.update(gpsHeight)
+    elseif gpsOK then
         -- read next gps position from sensor
         global_gps_pos = sensor.gpsCoord()
         if type(global_gps_pos) == 'table' and type(global_home_pos) == 'table' then
@@ -81,15 +92,6 @@ local function background( event )
             local groundSpeed = sensor.gpsSpeed() or 0.
             local gpsHeight = sensor.gpsAlt() or 0.
             local acclZ = sensor.az() or 0.
-            --]]
-            --[[ debug
-            local dist2home,dir2home = getPosition()
-            local groundSpeed = 10
-            local gpsHeight = 99
-            global_home_dir = 9
-            local acclZ = 0.1
-            --]]
-
             -- update course
             course.update(dist2home, dir2home, groundSpeed, acclZ)
             -- update competition
@@ -150,7 +152,6 @@ local function reloadCompetition()
             -- load new competition (will crash if file does not exist!)
             comp = mydofile(basePath..file_name)
         end
-
         -- reset competition
         comp.init(mode, global_baseA_left)
         -- set ground height
@@ -165,11 +166,31 @@ local function reloadCompetition()
             print(string.format("F3B: moved home by %d meter from: %9.6f, %9.6f to: %9.6f, %9.6f",length, global_home_pos.lat, global_home_pos.lon, new_position.lat, new_position.lon))
             global_home_pos = new_position
         end
-
+        -- any competition type with debug in the name is debugged
+        if string.find(global_comp_type,"debug") then
+            debug = true
+        else
+            debug = false
+        end
         -- enable 
         gpsOK = save_gpsOK
     end
 
+end
+-------------------------------------------------------------------------
+-- check if switch is activated
+-------------------------------------------------------------------------
+local pressed = false
+local function startPressed()
+    local startVal = getValue(startSwitchId)
+    if startVal > 512 and not pressed then
+        pressed = true
+        return true
+    end
+    if pressed and startVal < 128 then
+        pressed = false
+    end
+    return false
 end
 -------------------------------------------------------------------------
 -- run (periodically called when custom telemetry screen is visible)
@@ -197,6 +218,9 @@ local function run(event)
         else
             text = string.format("F3F: %s mode", comp.mode)
         end
+        if debug then
+            text = text .. " (debug)"
+        end
         screen.title(text,1,2)
         -- line 2: General info
         if type(global_comp_types) ~= 'table' then
@@ -215,7 +239,7 @@ local function run(event)
     -- draw continous updated values
     -------------------------------------------------------
     loops = loops+1
-    if gpsOK then
+    if gpsOK or debug then
         if type(global_gps_pos) == 'table' then
             
             -- update screen every ~ .5s
@@ -228,8 +252,8 @@ local function run(event)
                 last_timestamp = time_stamp
                 last_loop = loops
                 -- check for start event
-                local startVal = getValue(startSwitchId)
-                if comp and startVal > 0 then
+                local start = startPressed()
+                if comp and start then
                     if global_comp_type == 'f3b_dist' then
                         if comp.state ~= 1 and comp.runs > 0 and runs ~= comp.runs then
                             -- comp finished by hand

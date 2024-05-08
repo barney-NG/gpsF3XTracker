@@ -67,17 +67,22 @@ function comp.startTimer()
 end
 -- reset all values and start the competition
 function comp.start()
+    playTone(800,300,0,PLAY_NOW)
     -- start button activated during run -> finish run
     if comp.state == 25 or comp.state == 27 then
         comp.state = 30
         return
     end
     -- start the status machine
-    comp.message = "started..."
     comp.cleanbases()
     comp.lap = 0
-    comp. state = 10
-    playTone(800,300,0,PLAY_NOW)
+    if comp.state == 1 then
+        comp.message = "started..."
+        comp. state = 10
+    else
+        comp.message = "cancelled..."
+        comp. state = 0
+    end
 end
 -- messages on base
 function comp.lapPassed(lap, laptime, lostHeight)

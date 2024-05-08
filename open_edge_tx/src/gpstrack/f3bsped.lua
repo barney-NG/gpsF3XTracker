@@ -47,11 +47,17 @@ end
 -- reset all values and start the competition
 function comp.start()
     playTone(800,300,0,PLAY_NOW)
-    -- start the status machine
-    comp.message = "started..."
     comp.cleanbases()
     comp.lap = 0
-    comp. state = 10
+    -- start the status machine
+    if comp.state == 1 then
+        comp.message = "started..."
+        comp. state = 10
+    else
+        comp.message = "canceled..."
+        comp.state = 0
+    end
+    
 end
 -- messages on base
 local lapTimeOdd = 0

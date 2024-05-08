@@ -77,16 +77,17 @@ function comp.start()
     comp.cleanbases()
     comp.lap = 0
     comp.runtime = 0
-    -- cancel execution?
-    if comp.state > 1 then
-        comp.state = 0
-        return
-    end
-    comp.message = "started..."
-    if comp.training then
-        comp.state = 15
+    
+    if comp.state == 1 then
+        comp.message = "started..."
+        if comp.training then
+            comp.state = 15
+        else
+            comp.state = 5
+        end
     else
-        comp.state = 5
+        comp.message = "cancelled..."
+        comp.state = 0
     end
 end
 -- messages on base
