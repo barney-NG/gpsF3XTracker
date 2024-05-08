@@ -46,12 +46,12 @@ function comp.startTimer()
 end
 -- reset all values and start the competition
 function comp.start()
+    playTone(800,300,0,PLAY_NOW)
     -- start the status machine
     comp.message = "started..."
     comp.cleanbases()
     comp.lap = 0
     comp. state = 10
-    playTone(800,300,0,PLAY_NOW)
 end
 -- messages on base
 local lapTimeOdd = 0

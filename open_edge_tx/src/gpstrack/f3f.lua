@@ -73,16 +73,21 @@ function comp.startTimer()
 end
 -- reset all values and start the competition
 function comp.start()
-    comp.message = "started..."
+    playTone(800,300,0,PLAY_NOW)
     comp.cleanbases()
     comp.lap = 0
     comp.runtime = 0
+    -- cancel execution?
+    if comp.state > 1 then
+        comp.state = 0
+        return
+    end
+    comp.message = "started..."
     if comp.training then
         comp.state = 15
     else
         comp.state = 5
     end
-    playTone(800,300,0,PLAY_NOW)
 end
 -- messages on base
 local lapTimeOdd = 0

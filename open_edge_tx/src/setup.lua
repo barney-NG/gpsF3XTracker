@@ -256,17 +256,6 @@ local function loc2cb( loc )
     return cb,len
 end
 
--- debug
-local function vers(event)
-    local ver, radio, maj, minor, rev = getVersion()
-    print("version: "..ver)
-    if radio then print ("radio: "..radio) end
-    if maj then print ("maj: "..maj) end
-    if minor then print ("minor: "..minor) end
-    if rev then print ("rev: "..rev) end
-    return 1
-end
-
 -------------------------------------------------------------------------
 -- init (the script init function)
 -------------------------------------------------------------------------
