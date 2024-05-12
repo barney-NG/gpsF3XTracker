@@ -287,12 +287,12 @@ local function run(event)
             end
         else
             -- GPS sensor is warming up
-            screen.text(4, "GPS: waiting for data...")
+            screen.text(4, sensor.name .. ": waiting for data...")
         end
     else
         -- sensor not defined/connected
         if string.len(sensor.err) > 0 then
-            screen.text(5, "GPS: " .. sensor.err, INVERS+BLINK)
+            screen.text(5, sensor.name .. ": " .. sensor.err, INVERS+BLINK)
         else
             screen.text(5, "GPS sensor not found: " .. sensor.name, INVERS+BLINK)
         end
