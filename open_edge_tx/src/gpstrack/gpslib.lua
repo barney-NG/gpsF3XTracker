@@ -34,11 +34,11 @@ function gps.getBearing(p1,p2)
     local X =  math.cos(phi2) * math.sin(dphi)
     local Y = (math.cos(phi1) * math.sin(phi2)) 
             - (math.sin(phi1) * math.cos(phi2) * math.cos(dphi))
-    local bearing_rad = math.atan2(math.rad(X), math.rad(Y))
+    local bearing_rad = math.atan(math.rad(X), math.rad(Y))
     --]]
      --[[ Flat-Earth math
      local x = (p2.lon - p1.lon) * math.cos(math.rad(p1.lat))
-     local bearing_rad =  1.5708 - math.atan2(p2.lat - p1.lat, x)
+     local bearing_rad =  1.5708 - math.atan(p2.lat - p1.lat, x)
     --]]
     if bearing_rad < 0. then
         bearing_rad = math.pi + math.pi + bearing_rad
@@ -58,7 +58,7 @@ function gps.getDistance(p1, p2)
     local dphi = math.rad(p2.lat-p1.lat)
     local dLambda = math.rad(p2.lon-p1.lon)
     local a = math.pow(math.sin(dphi/2.),2) + math.cos(phi1) * math.cos(phi2) * math.pow(math.sin(dLambda/2.),2)
-    local c = 2. * math.atan2(math.sqrt(a), math.sqrt(1.-a))
+    local c = 2. * math.atan(math.sqrt(a), math.sqrt(1.-a))
   
     -- distance = R * c
     return R * c
@@ -79,7 +79,7 @@ function gps.getDestination(fromCoord, distance_m, bearingDegrees)
     local fromLonRadians = math.rad(fromCoord.lon)
     local toLatRadians = math.asin(math.sin(fromLatRadians) * math.cos(distanceRadians) +
                                     math.cos(fromLatRadians) * math.sin(distanceRadians) * math.cos(bearingRadians))
-    local toLonRadians = fromLonRadians + math.atan2(math.sin(bearingRadians) * math.sin(distanceRadians) * math.cos(fromLatRadians),
+    local toLonRadians = fromLonRadians + math.atan(math.sin(bearingRadians) * math.sin(distanceRadians) * math.cos(fromLatRadians),
                                                      math.cos(distanceRadians) - math.sin(fromLatRadians) * math.sin(toLatRadians))
     -- TODO: adjust toLonRadians to be in the range -pi to +pi...
     return {lat=math.deg(toLatRadians), lon=math.deg(toLonRadians)}
