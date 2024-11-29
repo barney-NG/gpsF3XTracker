@@ -1,0 +1,3 @@
+#!/bin/bash
+
+rsync -av gps4f3x "/mnt/c/Program Files (x86)/FrSky/Ethos/X20S/scripts/."
