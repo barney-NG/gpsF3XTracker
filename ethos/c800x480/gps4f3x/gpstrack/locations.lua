@@ -16,7 +16,7 @@ Change log:
 ]]
 local locations = {
     {name = '"Live" Position & Direction', lat = 0.0, lon = 0.0, dir = 0.0, dif = 20, comp = 1},
-    {name = "Parkplatz", lat=53.550707, lon=9.923472,dir = 9.0, dif = 0, comp = 5},
+    {name = "Parkplatz", lat=53.550707, lon=9.923472,dir = 9.0, dif = 20, comp = 5},
     {name = "Loechle", lat = 47.701974, lon = 8.3558498, dir = 152.0, dif = 10, comp = 2},
     {name = "Soenderborg", lat = 53.333333, lon = 51.987654, dir = 19.9, dif = 0, comp = 3},
     {name = "Toftum Bjerge", lat = 56.5422283333, lon = 8.52163166667, dir = 244.0, dif = -10, comp = 1},

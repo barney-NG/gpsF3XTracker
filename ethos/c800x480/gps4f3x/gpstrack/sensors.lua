@@ -45,9 +45,9 @@ data.gps_with_gyro = {
 data.gpsV2 = {
     gpsAlt   = {name = "GPS Alt", id = 0, factor = 1.0},
     gpsCoord = {name = "GPS", id = 0},
-    gpsSpeed = {name = "GPS Speed", id = 0, factor = 1.0},    -- not sure about unit, but as per print it seems to be knots????
+    gpsSpeed = {name = "GPS Speed", id = 0, factor = 1.0},  -- sensor must be konfigured to give m/s!
     gpsDate = {name = "GPS Clock", id = 0},
---    addEle = {name = "ele", id = 0}                         -- deflection of elevator - used for speed calculation in fuction sensor.az_simm replaced by configurable elevator channel
+--    addEle = {name = "ele", id = 0}                       -- deflection of elevator - used for speed calculation in fuction sensor.az_simm replaced by configurable elevator channel
 }
 -- debugging
 data.testUnit = {

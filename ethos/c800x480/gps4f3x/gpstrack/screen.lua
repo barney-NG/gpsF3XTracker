@@ -1,5 +1,5 @@
 --[[#############################################################################
-SCREEN Library: GPS F3X Tracker for Ethos v1.1
+SCREEN Library: GPS F3X Tracker for Ethos v1.2
 
 Copyright (c) 2024 Axel Barnitzke - original code for OpenTx          MIT License
 Copyright (c) 2024 Milan Repik - porting to FrSky Ethos               MIT License
@@ -8,10 +8,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 Change log:
 - v1.1: - only FONT_L is used for widget height > 290 (for full frame widget on 800x480 screen it is >= 294) and FONT_S otherwise
-        - new variable screen.ymin_t created with value -3 as for unknown reason text with FONT_S must be shifted slightly up to fit
+- v1.2: - improved management of fonts and FONT_STD included for full height / half wide widget layout
 ################################################################################]]
 
-local screen = {initialized=false, has_stack=false, cleaned=false, text_h=18}
+local screen = {initialized=false, has_stack=false, cleaned=false, text_h=18, font=0}
 
 screen.stack_values = {}
 
@@ -26,15 +26,15 @@ function screen.title(text, stack)                          -- draw a title
   color=lcd.RGB (0xFF, 0xFF, 0xFF)
   lcd.color (color)
   if stack then
-    lcd.drawText(screen.stack_xmin,screen.ymin_t,string.format("%-50.50s", text))    
+    lcd.drawText(screen.stack_xmin,screen.ymin,string.format("%-50.50s", text))    
   else  
-    lcd.drawText(screen.xmin,screen.ymin_t,string.format("%-50.50s", text))
-  end  
+    lcd.drawText(screen.xmin,screen.ymin,string.format("%-50.50s", text))
+  end
 end
 
 function screen.text(row,text)                              -- draw a line of text
   if row > 0 and row <= screen.rows then
-    local y0 = screen.ymin_t + row * screen.text_h
+    local y0 = screen.ymin + row * screen.text_h
     local x0 = screen.xmin + 1
     local s
     if screen.has_stack then 
@@ -66,7 +66,7 @@ end
 function screen.showStack()                                 -- print the contents of the whole stack
   for i=1,screen.rows,1 do
     if screen.stack_values[i] ~= "" then
-      local y0 = screen.ymin_t + i * screen.text_h + 4
+      local y0 = screen.ymin + i * screen.text_h + 4
       local x0 = screen.stack_xmin + 1
       local s = string.format("%11.11s", screen.stack_values[i])
       lcd.drawText(x0,y0,s)
@@ -84,25 +84,24 @@ end
 
 function screen.init(with_stack)                            -- setup widget screen
   if not screen.initialized then
-    LCD_W, LCD_H = lcd.getWindowSize()                      -- Height is 294+ for 800x480 screen resolution and full frame
---    print ("Screen LCD_H: ", LCD_H, ", LCD_W: ", LCD_W)
-    if LCD_H > 290 then
-      lcd.font(FONT_L)
+    LCD_W, LCD_H = lcd.getWindowSize()
+    if LCD_H > 290 then                                     -- Height is 294+ for 800x480 screen resolution and full frame
+      if LCD_W > 390 then                                   -- Width is 388 for 800x480 screen resolution and half frame
+        lcd.font(FONT_L); screen.font = FONT_L
+      else
+        lcd.font(FONT_STD); screen.font = FONT_STD
+      end
     else
-      lcd.font(FONT_S)
+      lcd.font(FONT_S); screen.font = FONT_S
     end
-        
+--    print ("Screen Init LCD_H: ", LCD_H, ", LCD_W: ", LCD_W, ", lcd.font: ", lcd.font())    
+    
     text_w, screen.text_h = lcd.getTextSize("")
     screen.rows = math.floor(LCD_H / screen.text_h) - 1     -- exclude title row
     screen.has_stack = with_stack or false                  -- "with_stack" = with area for F3x runs information
 
     screen.ymax = LCD_H
-    screen.ymin = 0
-    if LCD_H > 290 then
-      screen.ymin_t = 0
-    else
-      screen.ymin_t = -3                                    -- for unknown reason text with FONT_S must be shifted slightly up to fit 
-    end                      
+    screen.ymin = 0                   
     screen.xmin = 0
     if screen.has_stack then   
       screen.xmax = math.floor(3 * LCD_W / 4)
