@@ -1,5 +1,11 @@
 --[[#############################################################################
-COMPETITION Library: F3B Distance
+COMPETITION Library: F3B Speed: GPS F3X Tracker for Ethos v1.0
+
+Copyright (c) 2024 Axel Barnitzke - original code for OpenTx          MIT License
+Copyright (c) 2024 Milan Repik - porting to FrSky Ethos               MIT License
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 F3B: we define: baseA is always left. 
 state:
  0: not armed
@@ -12,7 +18,7 @@ state:
 functions: ---------------------------------------------------------------------
 ################################################################################]]
 
-local comp = {name='f3bdist.lua', baseAleft=true, mode='training', trainig=true, state=0, groundHeight=0., lastHeight=0., runtime=0, message='---'}
+local comp = {name='f3bsped.luac', baseAleft=true, mode='training', trainig=true, state=0, groundHeight=0., lastHeight=0., runtime=0, message='---'}
 
 function comp.init(mode, startLeft)
     comp.training = false -- not needed
@@ -42,11 +48,11 @@ end
 -- start competition timer 
 function comp.startTimer()
     comp.runtime = 0
-    comp.startTime_ms = getTime() * 10
+    comp.startTime_ms = getETime()
 end
 -- reset all values and start the competition
 function comp.start()
-    playTone(800,300,0,PLAY_NOW)
+    system.playTone(800,300)
     comp.cleanbases()
     comp.lap = 0
     -- start the status machine
@@ -63,11 +69,11 @@ end
 local lapTimeOdd = 0
 function comp.lapPassed(lap, laptime)
     comp.message = string.format("lap %d: %5.2fs", lap, laptime/1000.)
-    playNumber(lap,0)
+    system.playNumber(lap,0)
     -- It seems to make sense to have only one interim time
     if lap % 2 == 0 then
         laptime = laptime + lapTimeOdd
-        playNumber((laptime+50) / 100., 0, PREC1) -- milliseconds * 1000 = seconds * 10 = seconds + 1 decimal
+        system.playNumber((laptime+50) / 1000., UNIT_SECOND,0)
     else
         -- store laptime on odd lap
         lapTimeOdd = laptime
@@ -94,12 +100,12 @@ function comp.update(height)
     -------------------------------------------------------
     if comp.state == 10 then
         if comp.leftBaseOut > 0 then
-            playTone(800,300,0,PLAY_NOW)
+            system.playTone(800,300)
             comp.cleanbases()
             comp.message = "out of course"
             comp.state = 15
         elseif comp.leftBaseIn > 0 then
-            playTone(800,300,0,PLAY_NOW)
+            system.playTone(800,300)
             comp.message = "in course..."
             comp.state = 20
         end
@@ -110,7 +116,7 @@ function comp.update(height)
     -------------------------------------------------------
     if comp.state == 15 then
         if comp.leftBaseIn > 0 then
-            playTone(800,300,0,PLAY_NOW)
+            system.playTone(800,300)
             comp.message = "in course..."
             comp.state = 20
             return
@@ -133,11 +139,11 @@ function comp.update(height)
     -------------------------------------------------------
     if comp.state == 25 and comp.lap > 0 then
         -- working time...
-        comp.runtime = getTime() * 10 - comp.startTime_ms  
+        comp.runtime = getETime() - comp.startTime_ms  
         -- Base B
         if comp.rightBaseOut  > 0 then
             local laptime = comp.rightBaseOut - comp.lastLap
-            playTone(800,300,0,PLAY_NOW)
+            system.playTone(800,300)
             comp.lastLap = comp.rightBaseOut
             comp.cleanbases()
             if comp.lap > 3 then
@@ -156,11 +162,11 @@ function comp.update(height)
     -------------------------------------------------------
     if comp.state == 27 and comp.lap > 0 then
         -- working time...
-        comp.runtime = getTime() * 10 - comp.startTime_ms
+        comp.runtime = getETime() - comp.startTime_ms
         -- Base A
         if comp.leftBaseOut > 0 then
             local laptime = comp.leftBaseOut - comp.lastLap
-            playTone(800,300,0,PLAY_NOW)
+            system.playTone(800,300)
             comp.lastLap = comp.leftBaseOut
             comp.cleanbases()
             if comp.lap > 3 then
@@ -179,7 +185,7 @@ function comp.update(height)
     -------------------------------------------------------
     if comp.state == 30 then
         comp.runtime = comp.lastLap - comp.startTime_ms
-        playNumber((comp.runtime + 50 ) / 100., 37, PREC1) -- milliseconds * 1000 = seconds * 10 = seconds + 1 decimal
+        system.playNumber((comp.runtime + 50 ) / 1000., UNIT_SECOND, 1)
         comp.runs = comp.runs + 1
         comp.state = 0
         return

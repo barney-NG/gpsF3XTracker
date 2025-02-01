@@ -1,5 +1,11 @@
 --[[#############################################################################
-COMPETITION Library: F3B Distance
+COMPETITION Library: F3B Distance: GPS F3X Tracker for Ethos v1.0
+
+Copyright (c) 2024 Axel Barnitzke - original code for OpenTx          MIT License
+Copyright (c) 2024 Milan Repik - porting to FrSky Ethos               MIT License
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 F3B: we define: baseA is always left. 
 state:
  0: not armed
@@ -12,7 +18,7 @@ state:
 functions: ---------------------------------------------------------------------
 ################################################################################]]
 
-local comp = {name='f3bdist.lua', baseAleft=true, mode='training', trainig=true, state=0, groundHeight=0., lastHeight=0., runtime=0, message='---'}
+local comp = {name='f3bdist.luac', baseAleft=true, mode='training', trainig=true, state=0, groundHeight=0., lastHeight=0., runtime=0, message='---'}
 
 function comp.init(mode, startLeft)
     comp.training = false -- not needed
@@ -41,14 +47,15 @@ function comp.countdown(elapsed_milliseconds)
     if seconds >= 60 then
         local minutes = math.floor(seconds/60)
         if not com.played_minutes[minutes] then
-            playNumber(minutes,36)
+--            playNumber(minutes,36)
+            system.playNumber(minutes)
             comp.played_minutes[minutes] = true
         end
         return
     end
     if seconds >= 10 and seconds % 10 == 0 then 
         if not comp.played[seconds] then
-            playNumber(seconds,0)
+            system.playNumber(seconds)
             comp.played[seconds] = true
         end
     end
@@ -63,11 +70,11 @@ end
 -- start competition timer
 function comp.startTimer()
     comp.runtime = 0
-    comp.startTime_ms = getTime() * 10
+    comp.startTime_ms = getETime()
 end
 -- reset all values and start the competition
 function comp.start()
-    playTone(800,300,0,PLAY_NOW)
+    system.playTone(800,300)
     -- start button activated during run -> finish run
     if comp.state == 25 or comp.state == 27 then
         comp.state = 30
@@ -87,10 +94,10 @@ end
 -- messages on base
 function comp.lapPassed(lap, laptime, lostHeight)
     comp.message = string.format("lap %d: %5.2fs diff: %-5.1fm", lap, laptime/1000.0, lostHeight)
-    playNumber(lap,0)
-    playNumber((laptime+50) / 100., 0, PREC1) -- milliseconds * 1000 = seconds * 10 = seconds + 1 decimal
+    system.playNumber(lap,0)
+    playNumber((laptime+50) / 1000., UNIT_SECOND,0)
     if math.abs(lostHeight) > 0.5 then
-        playNumber(lostHeight,0,PREC1) -- lost height in meters per lap
+        system.playNumber(lostHeight,0) -- lost height in meters per lap
     end
 end
 -------------------------------------------------------
@@ -114,12 +121,12 @@ function comp.update(height)
     -------------------------------------------------------
     if comp.state == 10 then
         if comp.leftBaseOut > 0 then
-            playTone(800,300,0,PLAY_NOW)
+            system.playTone(800,300)
             comp.cleanbases()
             comp.message = "out of course"
             comp.state = 15 -- wait for base A in event
         elseif comp.leftBaseIn > 0 then
-            playTone(800,300,0,PLAY_NOW)
+            system.playTone(800,300)
             comp.message = "in course..."
             comp.state = 20 -- go to start
         end
@@ -130,7 +137,7 @@ function comp.update(height)
     -------------------------------------------------------
     if comp.state == 15 then
         if comp.leftBaseIn > 0 then
-            playTone(800,300,0,PLAY_NOW)
+            system.playTone(800,300)
             comp.message = "in course..."
             comp.state = 20
             return
@@ -153,7 +160,7 @@ function comp.update(height)
     -------------------------------------------------------
     if comp.state == 25 and comp.lap > 0 then
         -- working time exceeded?
-        comp.runtime = getTime() * 10 - comp.startTime_ms
+        comp.runtime = getETime() - comp.startTime_ms
         if comp.runtime > comp.compTime_ms then
             -- competition ended after 4 minutes
             comp.state = 30
@@ -163,7 +170,7 @@ function comp.update(height)
         if comp.rightBaseOut  > 0 then
             local laptime = comp.rightBaseOut - comp.lastLap
             local lostHeight = comp.groundHeight - comp.lastHeight
-            playTone(800,300,0,PLAY_NOW)
+            system.playTone(800,300)
             comp.lastLap = comp.rightBaseOut
             comp.lastHeight = comp.groundHeight
             comp.cleanbases()
@@ -178,7 +185,7 @@ function comp.update(height)
     -------------------------------------------------------
     if comp.state == 27 and comp.lap > 0 then
         -- working time exceeded?
-        comp.runtime = getTime() * 10 - comp.startTime_ms
+        comp.runtime = getETime() - comp.startTime_ms
         if comp.runtime > comp.compTime_ms then
             -- competition ended after 4 minutes
             comp.state = 30
@@ -188,7 +195,7 @@ function comp.update(height)
         if comp.leftBaseOut > 0 then
             local laptime = comp.leftBaseOut - comp.lastLap
             local lostHeight = comp.groundHeight - comp.lastHeight
-            playTone(800,300,0,PLAY_NOW)
+            playTone(800,300)
             comp.lastLap = comp.leftBaseOut
             comp.lastHeight = comp.groundHeight
             comp.cleanbases()
@@ -202,7 +209,7 @@ function comp.update(height)
     -- 30: END
     -------------------------------------------------------
     if comp.state == 30 then
-        playNumber(comp.lap - 1, 0) -- lap count
+        system.playNumber(comp.lap - 1, 0) -- lap count
         comp.runs = comp.runs + 1
         comp.state = 0
         return
