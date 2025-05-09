@@ -12,6 +12,7 @@ local startSwitchId = getFieldInfo("sh").id  -- start race when this switch is >
 
 -- GLOBAL VARIABLES (don't change)
 global_gps_pos = {lat=0.,lon=0.}
+global_gps_sats = -99
 -- global_home_dir -- defined in setup.lua
 -- global_home_pos -- defined in setup.lua
 -- global_comp_type = ... -- defined in setup.lua
@@ -83,6 +84,7 @@ local function background( event )
         -- update competition
         comp.update(gpsHeight)
     elseif gpsOK then
+        global_gps_sats = sensor.gpsSats()
         -- read next gps position from sensor
         global_gps_pos = sensor.gpsCoord()
         if type(global_gps_pos) == 'table' and type(global_home_pos) == 'table' then
@@ -281,7 +283,11 @@ local function run(event)
                 screen.text(3, "Course: " .. course.message)
                 -- line 4: course information
                 screen.text(4, string.format("V: %6.2f m/s Dst: %-7.2f m ",course.lastGroundSpeed, course.lastDistance))
-                screen.text(5, string.format("H: %5.2fm           %5.1f calls/s",comp.groundHeight, rate))
+                local sats = 'N/A'
+                if global_gps_sats > 0 then
+                    sats = string.format("%3d", global_gps_sats)
+                end
+                screen.text(5, string.format("H: %5.2fm  Sats: %s  %5.1f calls/s",comp.groundHeight, sats, rate))
                 -- line 5: gps information
                 -- screen.text(5, string.format("GPS: %9.6f %9.6f",global_gps_pos.lat,global_gps_pos.lon))  
             end
@@ -345,6 +351,8 @@ local function init(zone)
     sensor = mydofile(basePath..'sensors.lua')
     -- gpsOK = sensor.init('gpsV2')
     gpsOK = sensor.init('logger3')
+    print('<<gpsOK>>', gpsOK)
+
     -- load course (2 bases)   
     course = mydofile(basePath..'course.lua')
 

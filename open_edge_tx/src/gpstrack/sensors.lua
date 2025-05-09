@@ -6,59 +6,37 @@ functions: ---------------------------------------------------------------------
 ################################################################################]]
 
 -- Widget Definition
-local sensor = {data = nil, name = 'none', err=''}
+local sensor = {data = {}, name = 'none', err=''}
 local data = {}
--- GPS-Logger3 from SM Modelbau with factory defaults
-data.logger3 = {
-    baroAlt  = {name = "Alt", id = 0, factor = 1.0},
-    gpsAlt   = {name = "GAlt", id = 0, factor = 1.0},
-    gpsCoord = {name = "GPS", id = 0},
-    gpsSpeed = {name = "GSpd", id = 0, factor = 1.0/3.6}, -- sensor data is in km/h
-    gpsDate = {name = "Date", id = 0},
-    gpsDist = {name = "0860", id = 0, factor = 1.0},
-    gpsSats = {name = "0870", id = 0, factor = 1.0},
-    -- gpsClimb = {name = "0880", id = 0, factor = 1.0},
-    gpsDir = {name = "0890", id = 0},
-    -- gpsRelDir = {name = "08A0", id = 0},
-    -- VClimb = {name = "08B0", id = 0, factor = 1.0},
-    -- Distance = {name = "Fpat", id = 0, factor = 1.0},
-    ax = {name = "AccX", id = 0, factor = 1.0},
-    ay = {name = "AccY", id = 0, factor = 1.0},
-    az = {name = "AccZ", id = 0, factor = 1.0}
-}
--- Any GPS Sensor with internal gyro
-data.gps_with_gyro = {
-    gpsAlt   = {name = "GAlt", id = 0, factor = 1.0},
-    gpsCoord = {name = "GPS", id = 0},
-    gpsSpeed = {name = "GSpd", id = 0, factor = 1.0/3.6}, -- sensor data is in km/h
-    gpsDate = {name = "Date", id = 0},
-    ax = {name = "AccX", id = 0, factor = 1.0},
-    ay = {name = "AccY", id = 0, factor = 1.0},
-    az = {name = "AccZ", id = 0, factor = 1.0}
-}
--- GPS V2 from FRSky
-data.gpsV2 = {
+
+-- generic GPS sensor
+data.genericGPS = {
     gpsAlt   = {name = "GAlt", id = 0, factor = 1.0},
     gpsCoord = {name = "GPS", id = 0},
     gpsSpeed = {name = "GSpd", id = 0, factor = 1.0},
-    gpsDate = {name = "Date", id = 0},
+}
+-- generic AZ sensor
+data.genericAccel = {
+    az = {name = "AccZ", id = 0, factor = 1.0}
+}
+-- GPS-Logger3 from SM Modelbau with factory defaults
+data.isLogger3 = {
+    gpsSats = {name = "0870", id = 0}
+}
+data.isLogger3_1 = {
+    gpsSats = {name = "0871", id = 0}
+}
+-- RCGPS from Steve Chang
+data.isRCGPS = {
+    gpsSats = {name = "5111", id = 0}
+}
+-- some useful sensors
+data.addUnit = {
     addEle = {name = "ele", id = 0}
 }
--- debugging
-data.testUnit = {
-    rssi   = {name = "RSSI", id = 0},
-    rxbat = {name = "RxBt", id = 0}
-}
--- debug value getter
-function sensor.rssi()
-    return getValue(sensor.data.rssi.id)
-end
-function sensor.rxbat()
-    return getValue(sensor.data.rxbat.id)
-end
 -- value getter
 function sensor.gpsAlt()
-    return getValue(sensor.data.gpsAlt.id)
+    return getValue(sensor.data.gpsAlt.id) * sensor.data.gpsAlt.factor
 end    
 function sensor.gpsCoord()
     return getValue(sensor.data.gpsCoord.id)
@@ -66,26 +44,16 @@ end
 function sensor.gpsSpeed()
     return getValue(sensor.data.gpsSpeed.id) * sensor.data.gpsSpeed.factor
 end
-function sensor.gpsDate()
-    return getValue(sensor.data.gpsDate.id)
-end
 function sensor.gpsSats()
     if sensor.data.gpsSats then
         return getValue(sensor.data.gpsSats.id)
     end
-    return 99 
-end
-function sensor.ax()
-    return getValue(sensor.data.ax.id)
-end
-function sensor.ay()
-    return getValue(sensor.data.ay.id)
+    return -99 
 end
 function sensor.az()
     return getValue(sensor.data.az.id)
 end
--- simulate az with elevator for FrSky V2
-
+-- simulate az with elevator for az less systems
 local old_speed
 function sensor.az_sim()
     -- poor mans acceleratometer
@@ -109,17 +77,27 @@ end
 
 -- read the field infos for all sensors of the telemetry unit 
 function sensor.initializeSensor(data_table)
-    sensor.data = data_table
-    for name in pairs(sensor.data) do
-        local sensorName = sensor.data[name].name
+    local data = data_table
+    for name in pairs(data) do
+        local sensorName = data[name].name
         local fieldInfo = getFieldInfo(sensorName)
-        print("<<"..sensorName..">>") 
+        
         if type(fieldInfo) ~= 'table' then
+            print("<<"..sensorName..">> missing") 
             sensor.err = string.format("Sensor <%s> not found", sensorName)
-            print(sensor.err)
             return false
         end
         if fieldInfo.id then
+            print("<<"..sensorName..">> found") 
+            -- create a new sensor if needed
+            if not sensor.data[name] then
+                sensor.data[name] = {}
+            end
+            -- initialize all fields
+            sensor.data[name].name = sensorName
+            if data[name].factor then
+                sensor.data[name].factor = data[name].factor
+            end
             sensor.data[name].id = fieldInfo.id
         else
             sensor.err = string.format("No ID for sensor name: <%s>", sensorName)
@@ -130,27 +108,31 @@ function sensor.initializeSensor(data_table)
 end
 -- setup the telemetry unit
 function sensor.init(name)
-    local result = false
-    if name == 'logger3' then
-        sensor.name = name
-        result = sensor.initializeSensor(data.logger3)
-        -- try everything else
-        if not result then
-            sensor.name = 'GPS with Gyro'
-            result = sensor.initializeSensor(data.gps_with_gyro)
+    -- new approach:
+    -- 1. initialize a generic GPS sensor.
+    -- 2. determine sensor type and setup correction factors
+    -- 3. look for satelite sensor and determine sensor type
+    -- 4. look if we have an accelerometer on board
+    
+    local result
+    sensor.name = 'Generic GPS'
+    result = sensor.initializeSensor(data.genericGPS)
+    if result then
+        if sensor.initializeSensor(data.isLogger3) then
+            sensor.name = "Logger3"
+            sensor.data.gpsSpeed.factor = 1.0/3.6
+        elseif sensor.initializeSensor(data.isLogger3_1) then
+            -- I had to move the address because of conflict with integrated vario in receiver 
+            sensor.name = "Logger3"
+            sensor.data.gpsSpeed.factor = 1.0/3.6
+        elseif sensor.initializeSensor(data.isRCGPS) then
+            sensor.name = "RCGPS"
         end
-        if not result then
-            sensor.name = 'Simple GPS'
-            result = sensor.initializeSensor(data.gpsV2)
+        if not sensor.initializeSensor(data.genericAccel) then
+            sensor.initializeSensor(data.addUnit)
             sensor.az = sensor.az_sim
+            sensor.data.old_speed = 0
         end
-    elseif name == 'gpsV2' then
-        sensor.name = name
-        sensor.az = sensor.az_sim
-        result = sensor.initializeSensor(data.gpsV2)
-    else
-        sensor.name = 'test'
-        result = sensor.initializeSensor(data.testUnit)
     end
     return result
 end
