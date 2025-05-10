@@ -11,29 +11,24 @@ local data = {}
 
 -- generic GPS sensor
 data.genericGPS = {
-    gpsAlt   = {name = "GAlt", id = 0, factor = 1.0},
-    gpsCoord = {name = "GPS", id = 0},
-    gpsSpeed = {name = "GSpd", id = 0, factor = 1.0},
+    gpsAlt   = {name = {"GAlt","Alt","GPS Alt"}, id = 0, factor = 1.0},
+    gpsCoord = {name = {"GPS"}, id = 0},
+    gpsSpeed = {name = {"GSpd"}, id = 0, factor = 1.0},
+    elevator = {name = {"ele"}, id = 0}
 }
 -- generic AZ sensor
 data.genericAccel = {
-    az = {name = "AccZ", id = 0, factor = 1.0}
+    az = {name = {"AccZ"}, id = 0, factor = 1.0}
 }
 -- GPS-Logger3 from SM Modelbau with factory defaults
 data.isLogger3 = {
-    gpsSats = {name = "0870", id = 0}
-}
-data.isLogger3_1 = {
-    gpsSats = {name = "0871", id = 0}
+    gpsSats = {name = {"0870","0871","Sat","Sats"}, id = 0}
 }
 -- RCGPS from Steve Chang
 data.isRCGPS = {
-    gpsSats = {name = "5111", id = 0}
+    gpsSats = {name = {"5111","Sat","Sats"}, id = 0}
 }
--- some useful sensors
-data.addUnit = {
-    addEle = {name = "ele", id = 0}
-}
+
 -- value getter
 function sensor.gpsAlt()
     return getValue(sensor.data.gpsAlt.id) * sensor.data.gpsAlt.factor
@@ -58,7 +53,7 @@ local old_speed
 function sensor.az_sim()
     -- poor mans acceleratometer
     local speed = sensor.data.old_speed
-    local elev = getValue(sensor.data.addEle.id)
+    local elev = getValue(sensor.data.elevator.id)
     local az = 0
     if math.abs(elev) < 103 then
         -- take groundspeed only if the elevator is used less than 10%
@@ -79,13 +74,34 @@ end
 function sensor.initializeSensor(data_table)
     local data = data_table
     for name in pairs(data) do
-        local sensorName = data[name].name
-        local fieldInfo = getFieldInfo(sensorName)
-        
-        if type(fieldInfo) ~= 'table' then
-            print("<<"..sensorName..">> missing") 
-            sensor.err = string.format("Sensor <%s> not found", sensorName)
-            return false
+        local name_array = {}
+        -- we can have a lot of different options for one sensor name
+        local name_array = data[name].name
+        --if type(name_option) == 'table' then
+        --    name_array = name_option
+        --else
+        --    name_array[1] = name_option
+        --end
+        local sensor_found = false
+        local fieldInfo
+        local sensorName
+        -- try all different names until one fits
+        for key,sname in pairs(name_array) do
+            -- is there a fied info for that name?
+            fieldInfo = getFieldInfo(sname)
+            if type(fieldInfo) == 'table' then
+                -- if yes, stop searching
+                sensor_found = true
+                sensorName = sname
+                break
+            else
+                print("<<"..sname..">> missing") 
+                sensor.err = string.format("Sensor <%s> not found", sname)
+            end
+        end
+        -- if there is no sensor found, we can stop here
+        if not sensor_found then
+            return
         end
         if fieldInfo.id then
             print("<<"..sensorName..">> found") 
@@ -94,7 +110,7 @@ function sensor.initializeSensor(data_table)
                 sensor.data[name] = {}
             end
             -- initialize all fields
-            sensor.data[name].name = sensorName
+            --sensor.data[name].name = sensorName
             if data[name].factor then
                 sensor.data[name].factor = data[name].factor
             end
@@ -121,15 +137,10 @@ function sensor.init(name)
         if sensor.initializeSensor(data.isLogger3) then
             sensor.name = "Logger3"
             sensor.data.gpsSpeed.factor = 1.0/3.6
-        elseif sensor.initializeSensor(data.isLogger3_1) then
-            -- I had to move the address because of conflict with integrated vario in receiver 
-            sensor.name = "Logger3"
-            sensor.data.gpsSpeed.factor = 1.0/3.6
         elseif sensor.initializeSensor(data.isRCGPS) then
             sensor.name = "RCGPS"
         end
         if not sensor.initializeSensor(data.genericAccel) then
-            sensor.initializeSensor(data.addUnit)
             sensor.az = sensor.az_sim
             sensor.data.old_speed = 0
         end
