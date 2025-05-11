@@ -270,7 +270,7 @@ local function init(zone)
         on_simulator = true
     end
     -- I use some Taranis only functions
-    if string.find(radio,"x9d+") or string.find(radio,"taranis") then
+    if string.find(radio,"x9d") or string.find(radio,"taranis") then
         taranis = true
     end
     -- load locations table  

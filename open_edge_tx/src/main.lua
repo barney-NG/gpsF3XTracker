@@ -41,7 +41,8 @@ local gps = nil
 function mydofile (filename)
     -- local f = assert(loadfile(filename))
     --  mode: b: only binary, t: only text, c: compile only, x: do not compile
-    local mode = 'bx'
+    -- local mode = 'bx'
+    local mode = 'b' -- let's give it a try
     if on_simulator then
         mode = 'T'
     end
@@ -335,7 +336,7 @@ local function init(zone)
         on_simulator = true
     end
      -- I use some Taranis only functions
-    if string.find(radio,"taranis") then
+    if string.find(radio,"taranis") or string.find(radio,"x9d") then
         taranis = true
     end
     -- load gps library
@@ -350,6 +351,7 @@ local function init(zone)
     -- load sensor 
     sensor = mydofile(basePath..'sensors.lua')
     -- gpsOK = sensor.init('gpsV2')
+    -- sensors are generic now
     gpsOK = sensor.init('logger3')
     print('<<gpsOK>>', gpsOK)
 
