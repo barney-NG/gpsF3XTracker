@@ -89,6 +89,8 @@ local function background( event )
         -- read next gps position from sensor
         global_gps_pos = sensor.gpsCoord()
         if type(global_gps_pos) == 'table' and type(global_home_pos) == 'table' then
+            -- here comes offset (manual or from second GPC sensor on fixed position)
+            local offset = 0
             -- read sensor data
             local dist2home = gps.getDistance(global_home_pos, global_gps_pos)
             local dir2home = gps.getBearing(global_home_pos, global_gps_pos)
