@@ -49,7 +49,7 @@ function sensor.az()
     return getValue(sensor.data.az.id)
 end
 -- simulate az with elevator for az less systems
-local old_speed
+local old_speed = 0
 function sensor.az_sim()
     -- poor mans acceleratometer
     local speed = sensor.data.old_speed
@@ -77,11 +77,6 @@ function sensor.initializeSensor(data_table)
         local name_array = {}
         -- we can have a lot of different options for one sensor name
         local name_array = data[name].name
-        --if type(name_option) == 'table' then
-        --    name_array = name_option
-        --else
-        --    name_array[1] = name_option
-        --end
         local sensor_found = false
         local fieldInfo
         local sensorName
@@ -101,7 +96,7 @@ function sensor.initializeSensor(data_table)
         end
         -- if there is no sensor found, we can stop here
         if not sensor_found then
-            return
+            return false
         end
         if fieldInfo.id then
             print("<<"..sensorName..">> found") 
