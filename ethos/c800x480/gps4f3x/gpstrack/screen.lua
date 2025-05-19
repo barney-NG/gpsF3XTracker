@@ -1,5 +1,5 @@
 --[[#############################################################################
-SCREEN Library: GPS F3X Tracker for Ethos v1.2
+SCREEN Library: GPS F3X Tracker for Ethos v1.3
 
 Copyright (c) 2024 Axel Barnitzke - original code for OpenTx          MIT License
 Copyright (c) 2024 Milan Repik - porting to FrSky Ethos               MIT License
@@ -9,6 +9,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 Change log:
 - v1.1: - only FONT_L is used for widget height > 290 (for full frame widget on 800x480 screen it is >= 294) and FONT_S otherwise
 - v1.2: - improved management of fonts and FONT_STD included for full height / half wide widget layout
+- v1.3:
 ################################################################################]]
 
 local screen = {initialized=false, has_stack=false, cleaned=false, text_h=18, font=0}

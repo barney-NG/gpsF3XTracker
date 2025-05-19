@@ -1,5 +1,5 @@
 --[[#############################################################################
-COURSE Library: GPS F3X Tracker for Ethos v1.0
+COURSE Library: GPS F3X Tracker for Ethos v1.3
 
 Copyright (c) 2024 Axel Barnitzke - original code for OpenTx          MIT License
 Copyright (c) 2024 Milan Repik - porting to FrSky Ethos               MIT License
@@ -18,40 +18,26 @@ correction -- I set competition.rightBaseOut = timestamp (better approach in sin
         competition.leftBaseOut(timestamp) 
     4. the object enters the course from outsight over the left base in direction center
         competition.leftBaseIn(timestamp)
-functions: ---------------------------------------------------------------------
+functions:
 course.init
     initializes class internal variables
     special: course length and cardinal direction of course   
 course.update
     input gps bearing and distance of an object to the center of the course
     if available acceleration perpenticular to movement vector of the object (there are many sensors which deliver ax/ay/az)
+    
+Change log:
+- v1.1: - 
+- v1.2: - 
+- v1.3: - some small optimizations
 ################################################################################]]
--- minimal competition class needed by the course class
-local dummy_competition = {leftBaseIn=0, leftBaseOut=0, rightBaseIn=0, rightBaseOut=0}
---[[
-function dummy_competition.leftBaseIn(timestamp) 
-    print("leftBaseIn")
-end
-function dummy_competition.leftBaseOut(timestamp) 
-    print("leftBaseOut")
-    playTone(800,300,0,PLAY_NOW)
-end
-function dummy_competition.rightBaseIn(timestamp) 
-    print("rightBaseIn")
-end
-function dummy_competition.rightBaseOut(timestamp) 
-    print("rightBaseOut")
-    playTone(800,300,0,PLAY_NOW)
-end
-]]
+
 local course = {direction=0., length=50., az_max=3.0, lastDistance=0, lastGroundSpeed=0, message = ''}
 
 function course.init(courseLength, courseDirection, competition)      -- initializes class internal variables
   course.length = courseLength or 50.                       -- this is indeed half of the course length
   course.direction = courseDirection or 0.                  -- direction of course in rad. axis from left to right base
-  course.comp = competition or dummy_competition            -- the competition class 
---    course.screen = screen or nil                 -- not used
---    course.line = line or 0                       -- not used    
+  course.comp = competition                                 -- the competition class 
   course.az_max = 5.0                                       -- G-limit, when gps sensor starts to get inaccurate
   course.leftOutside = false                                -- object is left from outside
   course.leftInside = false                                 -- object moved from left outside to left inside
@@ -109,7 +95,7 @@ function course.update(distance, bearing, groundspeed, acceleration)
   if math.abs(course.delta) > 0.0 then                      -- evaluate only if object is moving
     course.no_movements = 0
 		local estimatedDistance = math.abs(course.Distance)
-    local estimatedOutsideDistance = math.abs(course.Distance)
+    local estimatedOutsideDistance = estimatedDistance
 
     if estimatedDistance < 2 then                           -- check for center (it's just convenient to have this message)
       course.message = string.format("center: %-4.1f", course.Distance)
@@ -156,9 +142,9 @@ function course.update(distance, bearing, groundspeed, acceleration)
       course.leftOutside = false
       course.rightOutside = false
     end
-    else
-      course.no_movements = course.no_movements + 1         -- needed for debugging
-    end
+  else
+    course.no_movements = course.no_movements + 1           -- needed for debugging
+  end
 end
 
 return course

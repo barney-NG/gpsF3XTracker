@@ -1,15 +1,20 @@
 --[[#############################################################################
-GPS Library: GPS F3X Tracker for Ethos v1.0
+GPS Library: GPS F3X Tracker for Ethos v1.3
 
 Copyright (c) 2024 Axel Barnitzke - original code for OpenTx          MIT License
 Copyright (c) 2024 Milan Repik - porting to FrSky Ethos               MIT License
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-functions: ---------------------------------------------------------------------
+functions:
 point = gps.newPoint(lat, lon)
 distance = gps.getDistance(point, point2)
 bearing = gps.getBearing(point1, point2)
+
+Change log:
+- v1.1: - 
+- v1.2: - 
+- v1.3: - some small optimizations
 ################################################################################]]
 
 -- Meta class "gps"
@@ -33,7 +38,7 @@ function gps.getBearing(p1,p2)                              -- Returns the angle
   local dphi = math.rad(p2.lon-p1.lon)
   local X =  math.cos(phi2) * math.sin(dphi)
   local Y = (math.cos(phi1) * math.sin(phi2)) - (math.sin(phi1) * math.cos(phi2) * math.cos(dphi))
---  local bearing_rad = math.atan2(math.rad(X), math.rad(Y))                                                      !!! atan2 function is deprecated as of release 5.3 !!!
+--  local bearing_rad = math.atan2(math.rad(X), math.rad(Y))                                               !!! atan2 function is deprecated as of LUA release 5.3 !!!
   local bearing_rad = math.atan(math.rad(X), math.rad(Y))
     --]]
      --[[ Flat-Earth math
@@ -55,7 +60,7 @@ function gps.getDistance(p1, p2)                            -- Returns distance 
   local dphi = math.rad(p2.lat-p1.lat)
   local dLambda = math.rad(p2.lon-p1.lon)
   local a = math.sin(dphi/2.)^2 + math.cos(phi1) * math.cos(phi2) * math.sin(dLambda/2.)^2
---  local c = 2. * math.atan2(math.sqrt(a), math.sqrt(1.-a))                                                      !!! atan2 function is deprecated as of release 5.3 !!!
+--  local c = 2. * math.atan2(math.sqrt(a), math.sqrt(1.-a))                                               !!! atan2 function is deprecated as of LUA release 5.3 !!!
   local c = 2. * math.atan(math.sqrt(a), math.sqrt(1.-a))
   
   return R * c                                              -- distance = R * c
@@ -76,29 +81,9 @@ function gps.getDestination(fromCoord, distance_m, bearingDegrees)    -- develop
   local toLatRadians = math.asin(math.sin(fromLatRadians) * math.cos(distanceRadians) +
                                     math.cos(fromLatRadians) * math.sin(distanceRadians) * math.cos(bearingRadians))
   local toLonRadians = fromLonRadians + math.atan(math.sin(bearingRadians) * math.sin(distanceRadians) * math.cos(fromLatRadians),
-                                                     math.cos(distanceRadians) - math.sin(fromLatRadians) * math.sin(toLatRadians))  -- !!! atan2 function is deprecated as of release 5.3 !!!
+                                                     math.cos(distanceRadians) - math.sin(fromLatRadians) * math.sin(toLatRadians))  -- !!! atan2 function is deprecated as of LUA release 5.3 !!!
     -- TODO: adjust toLonRadians to be in the range -pi to +pi...
   return {lat=math.deg(toLatRadians), lon=math.deg(toLonRadians)}
 end
 
---[[
- ufer = gps.newPoint(53.544391120481784, 9.894426479472363)
- sueden = gps.newPoint(53.539606847026164, 9.894723296744695)
- norden =gps.newPoint(53.5506297062015, 9.895094318335113)
- westen =gps.newPoint(53.54469976471789, 9.883110320964665)
- osten =gps.newPoint(53.54467771877567, 9.90359071275565)
- 
- wnorden = gps.getBearing(ufer,norden)
- print("norden: ", math.deg(wnorden))
- wosten = gps.getBearing(ufer,osten)
- print("osten:   ", math.deg(wosten))
- wsueden = gps.getBearing(ufer,sueden)
- print("sueden: ", math.deg(wsueden))
- wwesten = gps.getBearing(ufer,westen)
- print("westen: ", math.deg(wwesten))
-
- offs = gps.getDestination(ufer, 100, 271.0)
-
- print("offs: ", offs.lat, offs.lon)
- ]]
 return gps

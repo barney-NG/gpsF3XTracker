@@ -1,13 +1,15 @@
 --[[#############################################################################
-SENSOR Library: GPS F3X Tracker for Ethos v1.0
+SENSOR Library: GPS F3X Tracker for Ethos v1.3
 
 Copyright (c) 2024 Axel Barnitzke - original code for OpenTx          MIT License
 Copyright (c) 2024 Milan Repik - porting to FrSky Ethos               MIT License
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-functions: ---------------------------------------------------------------------
-
+Change log:
+- v1.1: - 
+- v1.2: - 
+- v1.3: - some small optimizations
 ################################################################################]]
 
 local sensor = {data = nil, name = 'none', err=''}
@@ -45,7 +47,7 @@ data.gps_with_gyro = {
 data.gpsV2 = {
     gpsAlt   = {name = "GPS Alt", id = 0, factor = 1.0},
     gpsCoord = {name = "GPS", id = 0},
-    gpsSpeed = {name = "GPS Speed", id = 0, factor = 1.0},  -- sensor must be konfigured to give m/s!
+    gpsSpeed = {name = "GPS Speed", id = 0, factor = 1.0},  -- sensor must be configured to give m/s!
     gpsDate = {name = "GPS Clock", id = 0},
 --    addEle = {name = "ele", id = 0}                       -- deflection of elevator - used for speed calculation in fuction sensor.az_simm replaced by configurable elevator channel
 }
@@ -80,26 +82,26 @@ function sensor.gpsSpeed()
   end  
 end
 function sensor.gpsDate()
-  print ("sensor - sensor.data.gpsDate.id:value()", sensor.data.gpsDate.id:value())  
+--  print ("sensor - sensor.data.gpsDate.id:value()", sensor.data.gpsDate.id:value())  
   return sensor.data.gpsDate.id:value()
 end
 function sensor.gpsSats()
   if sensor.data.gpsSats then
-      print ("sensor - sensor.data.gpsSats.id:value()", sensor.data.gpsSats.id:value())  
+--      print ("sensor - sensor.data.gpsSats.id:value()", sensor.data.gpsSats.id:value())  
       return sensor.data.gpsSats.id:value()
   end
   return 0
 end
 function sensor.ax()
-  print ("sensor - sensor.data.ax.id:value()", sensor.data.ax.id:value())  
+--  print ("sensor - sensor.data.ax.id:value()", sensor.data.ax.id:value())  
   return sensor.data.ax.id:value()
 end
 function sensor.ay()
-  print ("sensor - sensor.data.ay.id:value()", sensor.data.ay.id:value())  
+--  print ("sensor - sensor.data.ay.id:value()", sensor.data.ay.id:value())  
   return sensor.data.ay.id:value()
 end
 function sensor.az()
-  print ("sensor - sensor.data.az.id:value()", sensor.data.az.id:value())  
+--  print ("sensor - sensor.data.az.id:value()", sensor.data.az.id:value())  
   return sensor.data.az.id:value()
 end
 

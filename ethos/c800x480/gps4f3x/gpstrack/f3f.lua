@@ -1,5 +1,5 @@
 --[[#############################################################################
-COMPETITION Library: F3F (traing and competition): GPS F3X Tracker for Ethos v1.0
+COMPETITION Library: F3F (traing and competition): GPS F3X Tracker for Ethos v1.3
 
 Copyright (c) 2024 Axel Barnitzke - original code for OpenTx          MIT License
 Copyright (c) 2024 Milan Repik - porting to FrSky Ethos               MIT License
@@ -13,8 +13,13 @@ state:
 15: entry: wait for xxxBaseIn event
 20: comp: arm comptimer, 
 25: rightBaseOut, lap(1)
-27: leftBaseOut, 
-functions: ---------------------------------------------------------------------
+27: leftBaseOut
+30: end
+
+Change log:
+- v1.1: - 
+- v1.2: - 
+- v1.3: - some small optimizations
 ################################################################################]]
 
 local comp = {name='f3f.luac', baseAleft=true, mode='training', trainig=true, state=0, groundHeight=0., runtime=0, message='---'}
@@ -32,7 +37,7 @@ function comp.init(mode, startLeft)                         -- initialize event 
   else
     comp.baseAleft = false
   end
-  comp.state = 0 -- initial state
+  comp.state = 0                                            -- initial state
   comp.startTime_ms = 0
   comp.entrystart = 0
   comp.lap = 0
@@ -125,7 +130,6 @@ function comp.update(height)
   end
 
   if comp.state == 5 then                                   -- 5: START ENTRY: arm starttimer
---    playNumber(30,37)
     for number in pairs(comp.played) do
             comp.played[number] = false
     end
